@@ -9,13 +9,24 @@ import ItemAddForm from "../item-add-form";
 import "./app.css";
 
 export default class App extends Component {
+  maxId = 100;
+
   state = {
     todoData: [
-      { label: "Drink Coffee", important: false, id: 1 },
-      { label: "Make Awesome App", important: true, id: 2 },
-      { label: "Have a lunch", important: false, id: 3 }
+      this.createTodoItem("Drink Coffee"),
+      this.createTodoItem("Make Awesome App"),
+      this.createTodoItem("Have a lunch")
     ]
   };
+
+  createTodoItem(label) {
+    return {
+      label,
+      important: false,
+      done: false,
+      id: this.maxId++
+    };
+  }
 
   onDeleteItem = id => {
     this.setState(({ todoData }) => {
@@ -29,13 +40,14 @@ export default class App extends Component {
   };
 
   onAddItem = text => {
-    const item = {
-      label: text,
-      important: false,
-      id: this.state.todoData.length + 1
-    };
-    const newData = [...this.state.todoData, item];
-    this.setState({ todoData: newData });
+    const newItem = this.createTodoItem("Cycling");
+    this.setState(({ todoData }) => {
+      const newArr = [...todoData, newItem];
+
+      return {
+        todoData: newArr
+      };
+    });
   };
 
   onToggleImportant = id => {
@@ -43,10 +55,27 @@ export default class App extends Component {
   };
 
   onToggleDone = id => {
-    console.log("onToggleDone", id);
+    this.setState(({ todoData }) => {
+      const idx = todoData.findIndex(el => el.id === id);
+
+      //1.update object
+      const oldItem = todoData[idx];
+      const newItem = { ...oldItem, done: !oldItem.done };
+
+      //2. construct new array
+      const newArr = [
+        ...todoData.slice(0, idx),
+        newItem,
+        ...todoData.slice(idx + 1)
+      ];
+
+      return { todoData: newArr };
+    });
   };
 
   render() {
+    const doneCount = this.state.todoData.filter((el) => el.done).length;
+
     const { todoData } = this.state;
     return (
       <div className="todo-app">
